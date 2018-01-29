@@ -30,6 +30,8 @@ DEALINGS IN THE SOFTWARE.
 
 */
 
+#include <getopt.h>
+
 #include <osmium/io/reader.hpp>
 #include <osmium/io/pbf_input.hpp>
 #include <osmium/handler.hpp>
@@ -64,19 +66,69 @@ void copy_vector_to_set(std::vector<T>& vec, std::unordered_set<T>& newset) {
     }
 }
 
+void add_to_filter(osmium::TagsFilter& filter, char* argument) {
+    char* pch = strtok(argument, "=");
+    std::string key {pch};
+    pch = strtok(NULL, "=");
+    if (pch != nullptr) {
+        std::string value {pch};
+        filter.add_rule(true, osmium::StringMatcher::equal{key},
+                osmium::StringMatcher::equal{value});
+        if (strtok(NULL, "=")) {
+            throw std::runtime_error("Invalid OSM tag – contains = character twice or more often.");
+        }
+    } else {
+        filter.add_rule(true, osmium::StringMatcher::equal{key});
+    }
+}
+
+void print_help() {
+    std::cerr << "Usage: prepdelrels OPTIONS INPUT_FILE\n" \
+         "-r \"K=Y\", --rule \"K=V\"  key-value expression to filter relations to be deleted.\n" \
+         "                        This option might be used multiple times if you want to concatenate multiple rules using an AND.\n" \
+         "-h, --help              Print this help.\n\n" \
+         "Example:\n" \
+         "prepdelrels -r \"boundary=political\" -r \"political=election\" germany-latest.osm.pbf\n";
+}
+
 int main(int argc, char* argv[]) {
-    if (argc != 2) {
-        std::cerr << "Wrong number of arguments.\n" \
-                     "Usage: " << argv[0] << " INPUT_FILE\n";
+    static struct option long_options[] = {
+            {"help",   no_argument, 0, 'h'},
+            {"rule",  required_argument, 0, 'r'},
+            {0, 0, 0, 0}
+        };
+    osmium::TagsFilter filter {false};
+    while (true) {
+        int c = getopt_long(argc, argv, "r:h", long_options, 0);
+        if (c == -1) {
+            break;
+        }
+        switch (c) {
+        case 'r':
+            add_to_filter(filter, optarg);
+            break;
+        default:
+            print_help();
+            exit(0);
+        }
+    }
+    if (filter.empty()) {
+        std::cerr << "Error: No filter provided.\n";
+        print_help();
         exit(1);
     }
-    osmium::io::File input_file{argv[1]};
+    int remaining_args = argc - optind;
+    if (remaining_args != 1) {
+        print_help();
+        exit(1);
+    }
+    osmium::io::File input_file{argv[optind]};
 
     std::vector<osmium::object_id_type> node_ids;
     std::vector<osmium::object_id_type> way_ids;
     std::vector<osmium::object_id_type> relation_ids;
 
-    ElectionRelManager collector(node_ids, way_ids, relation_ids);
+    ElectionRelManager collector(node_ids, way_ids, relation_ids, filter);
     std::cerr << "read relations (1)\n";
     osmium::io::Reader reader{input_file};
     osmium::ProgressBar progress{reader.file_size(), osmium::util::isatty(2)};
@@ -106,7 +158,7 @@ int main(int argc, char* argv[]) {
     osmium::io::Reader reader2{input_file};
     std::cerr << "clean sets (4)\n";
 
-    HandlerPass2 handler2(node_set, way_set, relation_set);
+    HandlerPass2 handler2(node_set, way_set, relation_set, filter);
 
     while (osmium::memory::Buffer buffer = reader2.read()) {
         progress.update(reader2.offset());

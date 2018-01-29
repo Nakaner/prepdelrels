@@ -38,6 +38,8 @@ DEALINGS IN THE SOFTWARE.
 #include <osmium/osm/node.hpp>
 #include <osmium/osm/way.hpp>
 #include <osmium/osm/relation.hpp>
+#include <osmium/tags/tags_filter.hpp>
+#include <osmium/tags/taglist.hpp>
 
 using USet = std::unordered_set<osmium::object_id_type>;
 
@@ -46,8 +48,12 @@ class HandlerPass2 : public osmium::handler::Handler {
     USet& m_way_ids;
     USet& m_rel_ids;
 
+    osmium::TagsFilter& m_filter;
+
 public:
-    HandlerPass2(USet& node_ids, USet& way_ids, USet& relation_ids);
+    HandlerPass2() = delete;
+
+    HandlerPass2(USet& node_ids, USet& way_ids, USet& relation_ids, osmium::TagsFilter& filter);
 
     void node(const osmium::Node& node);
 
@@ -82,7 +88,7 @@ public:
      *
      * \param tags tags of an OSM object
      */
-    static bool is_election_boundary(const osmium::TagList& tags);
+    bool is_election_boundary(const osmium::TagList& tags);
 };
 
 #endif /* HANDLER_PASS2_HPP_ */

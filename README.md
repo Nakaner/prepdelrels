@@ -17,6 +17,7 @@ This repository contains a tool to help you deleting relations from OpenStreetMa
 
 
 ## Dependencies
+
 This software uses the [Osmium library](https://github.com/osmcode/libosmium)
 for everything related with reading OSM data.
 
@@ -29,14 +30,14 @@ See the [LICENSE](LICENSE) file for the license of this program.
 ## How it works
 
 This program reads an unfiltered OpenStreetMap data extract and collects all
-IDs of all objects which are member of a relation which have some certain
-(currently hardcoded) tags. In a second pass it reads all OSM objects in the
-input file and removes the ID of the objects from the list which have proper
-tags (long and hardcoded list). As an result, a list of objects is written to
-STDOUT. These objects have to be reverted if you delete the relations they are
-member of because these objects do not have any proper tags and are not member
-of any other relation (except indirectly like relations which are members of
-relations and nodes which are members of a member way of a relations).
+IDs of all objects which are member of a relation which have all tags provided
+as arguments of the `--rule` option. In a second pass it reads all OSM objects
+in the input file and removes the ID of the objects from the list which have
+proper tags (long and hardcoded list). As an result, a list of objects is
+written to STDOUT. These objects have to be reverted if you delete the
+relations they are member of because these objects do not have any proper tags
+and are not member of any other relation (except indirectly like relations
+which are members of relations and nodes which are members of a member way of a relations).
 
 
 ## Dependencies

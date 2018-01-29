@@ -36,6 +36,8 @@ DEALINGS IN THE SOFTWARE.
 #include <iostream>
 #include <vector>
 #include <osmium/relations/relations_manager.hpp>
+#include <osmium/tags/tags_filter.hpp>
+#include <osmium/tags/taglist.hpp>
 #include "handler_pass2.hpp"
 
 using IDVector = std::vector<osmium::object_id_type>;
@@ -44,11 +46,14 @@ class ElectionRelManager: public osmium::relations::RelationsManager<ElectionRel
     true, true, false> {
 
 public:
-    ElectionRelManager(IDVector& nodes, IDVector& ways, IDVector& relations);
+    ElectionRelManager() = delete;
+
+    ElectionRelManager(IDVector& nodes, IDVector& ways, IDVector& relations, osmium::TagsFilter& filter);
 
     IDVector& m_nodes;
     IDVector& m_ways;
     IDVector& m_relations;
+    osmium::TagsFilter& m_filter;
 
     bool new_relation(const osmium::Relation& relation) const;
 

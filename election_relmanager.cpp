@@ -32,13 +32,14 @@ DEALINGS IN THE SOFTWARE.
 
 #include "election_relmanager.hpp"
 
-ElectionRelManager::ElectionRelManager(IDVector& nodes, IDVector& ways, IDVector& relations) :
+ElectionRelManager::ElectionRelManager(IDVector& nodes, IDVector& ways, IDVector& relations, osmium::TagsFilter& filter) :
         m_nodes(nodes),
         m_ways(ways),
-        m_relations(relations) {}
+        m_relations(relations),
+        m_filter(filter) {}
 
 bool ElectionRelManager::new_relation(const osmium::Relation& relation) const {
-    return HandlerPass2::is_election_boundary(relation.tags());
+    return osmium::tags::match_any_of(relation.tags(), m_filter);
 }
 
 void ElectionRelManager::complete_relation(const osmium::Relation& relation) {

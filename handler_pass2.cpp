@@ -32,10 +32,11 @@ DEALINGS IN THE SOFTWARE.
 
 #include "handler_pass2.hpp"
 
-HandlerPass2::HandlerPass2(USet& node_ids, USet& way_ids, USet& rel_ids) :
+HandlerPass2::HandlerPass2(USet& node_ids, USet& way_ids, USet& rel_ids, osmium::TagsFilter& filter) :
     m_node_ids(node_ids),
     m_way_ids(way_ids),
-    m_rel_ids(rel_ids) {}
+    m_rel_ids(rel_ids),
+    m_filter(filter) {}
 
 
 void HandlerPass2::node(const osmium::Node& node) {
@@ -193,5 +194,5 @@ bool HandlerPass2::has_important_tags(const osmium::TagList& tags) {
 }
 
 bool HandlerPass2::is_election_boundary(const osmium::TagList& tags) {
-    return tags.has_tag("boundary", "political") && tags.has_tag("political", "election");
+    return osmium::tags::match_any_of(tags, m_filter);
 }

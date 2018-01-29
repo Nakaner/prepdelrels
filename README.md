@@ -44,7 +44,7 @@ which are members of relations and nodes which are members of a member way of a 
 
 * C++11 compiler
 * libosmium (`libosmium-dev`) and all its [important
-* dependencies](http://osmcode.org/libosmium/manual.html#dependencies)
+* [dependencies](http://osmcode.org/libosmium/manual.html#dependencies)
 * CMake (`cmake`)
 
 You can install libosmium either using your package manager or just cloned from
